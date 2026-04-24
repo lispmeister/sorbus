@@ -1,4 +1,6 @@
-# Agent Payments via L402, Lightning (LND), and Fedimint
+# SORBUS
+
+Agent Payments via L402, Lightning (LND), and Fedimint
 
 A service architecture that lets AI agents pay for L402-gated APIs without
 holding any keys. The user holds long-term spending authority in a Fedimint
