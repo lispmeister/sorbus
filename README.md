@@ -82,23 +82,23 @@ user: alice
 ## System Components
 
 ```
-                       ┌─────────────────────────────────────────┐
+                       ┌──────────────────────────────────────────┐
                        │            Operator Service              │
                        │                                          │
-  ┌─────────────┐      │  ┌────────────────────────────────────┐ │      ┌─────────────┐
-  │  AI Agent   │      │  │           Coordinator              │ │      │ L402 API    │
-  │             │◄────►│  │  · agent credential registry       │ │◄────►│ Server      │
-  │ agent cred  │      │  │  · session + balance accounting    │ │      │             │
-  │ + session   │      │  │  · policy enforcement              │ │      │ sees only:  │
-  │ capability  │      │  │  · nonce registry                  │ │      │ · our LND   │
-  │ token       │      │  │  · budget request broker           │ │      │   pubkey    │
-  │             │      │  │  · push broker (APNs/FCM)          │ │      │ · random    │
-  │ L402 cache  │      │  │  · audit log                       │ │      │   token_id  │
-  └─────────────┘      │  └────────┬───────────┬───────────────┘ │      └─────────────┘
+  ┌─────────────┐      │  ┌────────────────────────────────────┐  │      ┌─────────────┐
+  │  AI Agent   │      │  │           Coordinator              │  │      │ L402 API    │
+  │             │◄────►│  │  · agent credential registry       │  │◄────►│ Server      │
+  │ agent cred  │      │  │  · session + balance accounting    │  │      │             │
+  │ + session   │      │  │  · policy enforcement              │  │      │ sees only:  │
+  │ capability  │      │  │  · nonce registry                  │  │      │ · our LND   │
+  │ token       │      │  │  · budget request broker           │  │      │   pubkey    │
+  │             │      │  │  · push broker (APNs/FCM)          │  │      │ · random    │
+  │ L402 cache  │      │  │  · audit log                       │  │      │   token_id  │
+  └─────────────┘      │  └────────┬───────────┬───────────────┘  │      └─────────────┘
                        │           │           │                  │
-                       │           │ LND gRPC  │ Fedimint mint RPC│
+                       │           │ LND gRPC  │Fedimint mint RPC │
                        │           │           │                  │
-                       │  ┌────────▼──────┐  ┌▼────────────────┐ │
+                       │  ┌────────▼──────┐  ┌─▼────────────────┐ │
                        │  │   LND node    │  │ Fedimint Gateway │ │
                        │  │               │  │ (e-cash ↔ LN)    │ │
                        │  │ pooled        │  └────────┬─────────┘ │
@@ -110,9 +110,9 @@ user: alice
                        │  └──────┬────────┘  └────────▲─────────┘ │
                        │         │                    │           │
                        └─────────┼────────────────────┼───────────┘
-                                 │ Lightning Network   │ e-cash transfers
-                                 ▼                     │ (user-signed)
-                       ┌─────────────────────────────────────────┐
+                                 │ Lightning Network  │ e-cash transfers
+                                 ▼                    │ (user-signed)
+                       ┌──────────────────────────────────────────┐
                        │           Companion App (phone)          │
                        │                                          │
                        │  · e-cash balance (user-held)            │
@@ -120,7 +120,7 @@ user: alice
                        │  · real-time spend ledger per agent      │
                        │  · budget request review + approve/deny  │
                        │  · session revocation                    │
-                       └─────────────────────────────────────────┘
+                       └──────────────────────────────────────────┘
 ```
 
 ### Component Roles
