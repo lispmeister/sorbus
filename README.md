@@ -322,31 +322,27 @@ All messages are JSON with `{type, id, ts, ...}`. Server messages carry a monoto
 ### Session lifecycle
 
 ```
-     requested ──approve──▶ funding ──ecash_received──▶ active
-         │                     │                         │ │ │
-         │denied/timeout       │transfer_failed          │ │ │
-         ▼                     ▼                         │ │ │
-       closed               closed                       │ │ │
-                                                         │ │ │
-                     ┌───────────────────────────────────┘ │ │
-                     │ top_up_requested ──▶ topping_up ────┘ │
-                     │                          │            │
-                     │                          ▼            │
-                     │                       active          │
-                     │                                       │
-       ┌─────────────┴────────┬───────────────┬──────────────┘
-       ▼                      ▼               ▼
-   user_revoked         operator_frozen    expired
-       │                      │               │
-       ▼                      ▼               ▼
-   refunding              hold_period     refunding
-       │                      │               │
-       ▼                      ▼               ▼
-    refunded ◀────────── refunding ──────▶ refunded
-                               │
-                            (dispute)
-                               ▼
-                           resolved
+  requested
+      │
+      ├── deny / timeout ──▶ closed
+      │
+      └── approve ──▶ funding
+                        │
+                        ├── transfer_failed ──▶ closed
+                        │
+                        └── ecash_received ──▶ active
+
+  active
+      │
+      ├── top_up_requested ──▶ topping_up ──ecash_received──▶ active
+      │
+      ├── expired         ──▶ refunding ──▶ refunded
+      │
+      ├── user_revoked    ──▶ refunding ──▶ refunded
+      │
+      └── operator_frozen ──▶ hold_period ──▶ refunding ──▶ refunded
+                                   (after hold_expired
+                                    or dispute_resolved)
 ```
 
 Invariants:
@@ -357,19 +353,19 @@ Invariants:
 ### Payment lifecycle (`POST /pay`)
 
 ```
-  received ──validate──▶ reserved ──LND send──▶ in_flight
-     │                       │                      │
-     │invalid                │reserve_failed        │
-     ▼                       ▼                      │
-   rejected              rejected                   │
-                                                    │
-                     ┌──────────settle──────────────┤
-                     │                              │
-                     ▼                              ▼
-                 committed                       failed
-                     │                              │
-                     ▼                              ▼
-             audit + respond             release reserve + respond
+  received
+      │
+      ├── invalid ──▶ rejected
+      │
+      └── validated
+             │
+             ├── reserve_failed ──▶ rejected
+             │
+             └── reserved ──LND send──▶ in_flight
+                                           │
+                                           ├── settle  ──▶ committed  (audit + respond)
+                                           │
+                                           └── failure ──▶ failed     (release reserve + respond)
 ```
 
 Rules:
@@ -382,20 +378,20 @@ Rules:
 ### Budget-request lifecycle
 
 ```
-  submitted ──validate──▶ pending ──push_delivered──▶ awaiting_user
-      │                       │                            │
-      │invalid/rate_limited   │push_failed                  │
-      ▼                       ▼                            │
-    rejected              rejected                          │
-                                                            │
-         ┌────approve────┬────modify────┬────deny────┬──timeout──┐
-         ▼               ▼              ▼            ▼           ▼
-      funding         funding         denied       denied     timeout
-         │               │
-         ▼               ▼
-     (session           (session
-      lifecycle)         lifecycle with
-                         modified policy)
+  submitted
+      │
+      ├── invalid / rate_limited ──▶ rejected
+      │
+      └── pending
+             │
+             ├── push_failed ──▶ rejected
+             │
+             └── awaiting_user
+                    │
+                    ├── approve ──▶ funding  (see session lifecycle)
+                    ├── modify  ──▶ funding  (with modified policy)
+                    ├── deny    ──▶ denied
+                    └── timeout ──▶ timed_out
 ```
 
 - `pending → awaiting_user` requires at least one successful push delivery OR the companion app being actively connected.
